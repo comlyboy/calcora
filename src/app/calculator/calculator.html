@@ -34,9 +34,12 @@
     </header>
 
     <div class="flex min-h-0 flex-1 flex-col gap-4 px-5 pb-4">
-      <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1 overflow-y-auto px-1">
-        <span class="w-full shrink-0 text-right text-4xl font-light wrap-break-word text-white">{{ expression() }}</span>
-        <span class="w-full shrink-0 text-right text-sm wrap-break-word text-neutral-400">{{ formattedDisplayValue() }}</span>
+      <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1.5 overflow-y-auto px-1">
+        <span class="w-full shrink-0 text-right text-xl wrap-break-word text-neutral-400">{{ formattedDisplayValue() }}</span>
+        @if (expression()) {
+          <div class="w-full shrink-0 border-t border-dashed border-neutral-700"></div>
+          <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white">{{ expression() }}</span>
+        }
       </div>
 
       <div class="grid h-[25.5rem] min-h-0 grid-cols-4 gap-3" [style.grid-template-rows]="buttonGridTemplateRows">

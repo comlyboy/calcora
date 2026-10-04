@@ -1,4 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { CalculationHistory } from '../core/calculation-history';
 
 export enum CalculatorOperator {
   ADD = '+',
@@ -11,7 +12,7 @@ export enum CalculatorButtonType {
   DIGIT = 'DIGIT',
   DECIMAL = 'DECIMAL',
   OPERATOR = 'OPERATOR',
-  ACTION = 'ACTION',
+  CLEAR = 'CLEAR',
   EQUALS = 'EQUALS',
 }
 
@@ -19,7 +20,7 @@ export interface CalculatorButtonConfig {
   label: string;
   type: CalculatorButtonType;
   operator?: CalculatorOperator;
-  wide?: boolean;
+  columnSpan?: 2 | 3;
 }
 
 const MAXIMUM_DISPLAY_DIGITS = 12;
@@ -31,13 +32,15 @@ const MAXIMUM_DISPLAY_DIGITS = 12;
   templateUrl: './calculator.html',
 })
 export class Calculator {
+  private readonly calculationHistory = inject(CalculationHistory);
+
   protected readonly CalculatorButtonType = CalculatorButtonType;
+  protected readonly history = this.calculationHistory.entries;
+  protected readonly isHistoryPanelOpen = signal(false);
 
   protected readonly buttonRows: readonly (readonly CalculatorButtonConfig[])[] = [
     [
-      { label: 'AC', type: CalculatorButtonType.ACTION },
-      { label: '+/−', type: CalculatorButtonType.ACTION },
-      { label: '%', type: CalculatorButtonType.ACTION },
+      { label: 'AC', type: CalculatorButtonType.CLEAR, columnSpan: 3 },
       { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
     ],
     [
@@ -59,7 +62,7 @@ export class Calculator {
       { label: '+', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.ADD },
     ],
     [
-      { label: '0', type: CalculatorButtonType.DIGIT, wide: true },
+      { label: '0', type: CalculatorButtonType.DIGIT, columnSpan: 2 },
       { label: '.', type: CalculatorButtonType.DECIMAL },
       { label: '=', type: CalculatorButtonType.EQUALS },
     ],
@@ -126,22 +129,15 @@ export class Calculator {
     }
 
     const currentValue = Number(this.displayValue());
-    this.displayValue.set(this.formatResult(this.applyOperator(operand, currentValue, operator)));
+    const resultValue = this.formatResult(this.applyOperator(operand, currentValue, operator));
+    const fullExpression = `${operand} ${operator} ${currentValue}`;
+
+    this.displayValue.set(resultValue);
     this.storedOperand.set(null);
     this.pendingOperator.set(null);
     this.isEnteringNewOperand.set(true);
-  }
 
-  protected toggleSign(): void {
-    if (this.displayValue() === '0') {
-      return;
-    }
-
-    this.displayValue.set(this.displayValue().startsWith('-') ? this.displayValue().slice(1) : '-' + this.displayValue());
-  }
-
-  protected applyPercent(): void {
-    this.displayValue.set(this.formatResult(Number(this.displayValue()) / 100));
+    void this.calculationHistory.recordCalculation(fullExpression, resultValue);
   }
 
   protected clearAll(): void {
@@ -149,6 +145,19 @@ export class Calculator {
     this.storedOperand.set(null);
     this.pendingOperator.set(null);
     this.isEnteringNewOperand.set(true);
+  }
+
+  protected toggleHistoryPanel(): void {
+    this.isHistoryPanelOpen.update((isOpen) => !isOpen);
+  }
+
+  protected formatTimestamp(timestamp: number): string {
+    return new Date(timestamp).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   }
 
   protected handleButtonPress(button: CalculatorButtonConfig): void {
@@ -165,19 +174,9 @@ export class Calculator {
       case CalculatorButtonType.EQUALS:
         this.calculateResult();
         break;
-      case CalculatorButtonType.ACTION:
-        this.handleAction(button.label);
+      case CalculatorButtonType.CLEAR:
+        this.clearAll();
         break;
-    }
-  }
-
-  private handleAction(label: string): void {
-    if (label === 'AC') {
-      this.clearAll();
-    } else if (label === '+/−') {
-      this.toggleSign();
-    } else if (label === '%') {
-      this.applyPercent();
     }
   }
 

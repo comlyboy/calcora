@@ -59,8 +59,8 @@ export class Calculator {
   /** A single flat list, relying on CSS grid auto-placement (4 columns) to lay them out in reading order. */
   protected readonly buttons: readonly CalculatorButtonConfig[] = [
     { label: 'AC', type: CalculatorButtonType.CLEAR },
-    { label: '%', type: CalculatorButtonType.PERCENT },
     { label: '⌫', type: CalculatorButtonType.BACKSPACE },
+    { label: '%', type: CalculatorButtonType.PERCENT },
     { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
 
     { label: '7', type: CalculatorButtonType.DIGIT },
@@ -382,14 +382,11 @@ export class Calculator {
   }
 
   protected buttonClasses(button: CalculatorButtonConfig): Record<string, boolean> {
-    const isOperatorStyled = button.type === CalculatorButtonType.OPERATOR;
+    const isOperatorStyled = button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.PERCENT;
     const isEquals = button.type === CalculatorButtonType.EQUALS;
     const isClear = button.type === CalculatorButtonType.CLEAR;
     const isBackspace = button.type === CalculatorButtonType.BACKSPACE;
-    const isNeutralStyled =
-      button.type === CalculatorButtonType.DIGIT ||
-      button.type === CalculatorButtonType.DECIMAL ||
-      button.type === CalculatorButtonType.PERCENT;
+    const isNeutralStyled = button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL;
     const isWide = button.columnSpan === 2 || button.columnSpan === 3;
 
     return {

@@ -96,13 +96,13 @@ export class Calculator {
   /** The expression tokens typed so far, alternating operand and operator strings, e.g. ['230', '+', '250']. */
   private readonly tokens = signal<string[]>([]);
   private readonly isEnteringNewOperand = signal(true);
-  private readonly hasResult = signal(false);
+  protected readonly hasResult = signal(false);
   private readonly lastEvaluatedExpression = signal('');
 
-  /** The operation line: always the expression text — growing as it's typed, or the completed expression + "=" once "=" is pressed. */
+  /** The operation line: always the expression text — growing as it's typed, or the completed expression once "=" is pressed. */
   protected readonly operationLineText = computed(() => {
     if (this.hasResult()) {
-      return `${this.formatExpressionText(this.lastEvaluatedExpression())} =`;
+      return this.formatExpressionText(this.lastEvaluatedExpression());
     }
 
     const currentTokens = this.tokens();
@@ -113,7 +113,8 @@ export class Calculator {
   });
   /**
    * The result line: always the numeric result — a live running total as soon as there's a full
-   * "operand operator operand" to evaluate, updating with every keystroke, or the final value once "=" is pressed.
+   * "operand operator operand" to evaluate, updating with every keystroke, or the final value once "=" is pressed
+   * (the template prefixes this with a smaller "=" once `hasResult()` is true).
    */
   protected readonly resultLineText = computed(() => {
     if (this.hasResult()) {

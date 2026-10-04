@@ -49,9 +49,11 @@
         }}</span>
         @if (resultLineText()) {
           <div class="w-full shrink-0 border-t border-dashed border-neutral-700 light:border-neutral-300"></div>
-          <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white light:text-neutral-900">{{
-            resultLineText()
-          }}</span>
+          <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white light:text-neutral-900">
+            @if (hasResult()) {
+              <span class="text-2xl">= </span>
+            }{{ resultLineText() }}</span
+          >
         }
       </div>
 

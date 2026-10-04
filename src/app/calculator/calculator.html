@@ -26,16 +26,7 @@
               <button
                 type="button"
                 (click)="handleButtonPress(button)"
-                [class.col-span-2]="button.columnSpan === 2"
-                [class.col-span-3]="button.columnSpan === 3"
-                [class.bg-orange-500]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
-                [class.hover:bg-orange-400]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
-                [class.bg-neutral-500]="button.type === CalculatorButtonType.CLEAR"
-                [class.hover:bg-neutral-400]="button.type === CalculatorButtonType.CLEAR"
-                [class.bg-neutral-700]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
-                [class.hover:bg-neutral-600]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
-                [class.justify-start]="button.columnSpan === 2 || button.columnSpan === 3"
-                [class.pl-7]="button.columnSpan === 2 || button.columnSpan === 3"
+                [ngClass]="buttonClasses(button)"
                 class="flex h-16 items-center justify-center rounded-full text-2xl font-medium text-white transition-colors active:opacity-80"
               >
                 {{ button.label }}

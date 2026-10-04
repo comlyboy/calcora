@@ -1,0 +1,33 @@
+<div class="flex min-h-screen items-center justify-center bg-neutral-900 p-4">
+  <div class="w-full max-w-xs rounded-3xl bg-neutral-800 p-4 shadow-2xl">
+    <div class="mb-4 flex flex-col items-end gap-1 px-2 py-4">
+      <span class="h-5 text-sm text-neutral-400">{{ expression() }}</span>
+      <span class="w-full truncate text-right text-5xl font-light text-white">{{ formattedDisplayValue() }}</span>
+    </div>
+
+    <div class="grid gap-3">
+      @for (row of buttonRows; track $index) {
+        <div class="grid grid-cols-4 gap-3">
+          @for (button of row; track button.label) {
+            <button
+              type="button"
+              (click)="handleButtonPress(button)"
+              [class.col-span-2]="button.wide"
+              [class.bg-orange-500]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
+              [class.hover:bg-orange-400]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
+              [class.bg-neutral-500]="button.type === CalculatorButtonType.ACTION"
+              [class.hover:bg-neutral-400]="button.type === CalculatorButtonType.ACTION"
+              [class.bg-neutral-700]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
+              [class.hover:bg-neutral-600]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
+              [class.justify-start]="button.wide"
+              [class.pl-7]="button.wide"
+              class="flex h-16 items-center justify-center rounded-full text-2xl font-medium text-white transition-colors active:opacity-80"
+            >
+              {{ button.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

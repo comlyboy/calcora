@@ -14,9 +14,9 @@
     </header>
 
     <div class="flex min-h-0 flex-1 flex-col gap-4 px-5 pb-4">
-      <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1 px-1">
-        <span class="h-5 text-sm text-neutral-400">{{ expression() }}</span>
-        <span class="w-full truncate text-right text-6xl font-light text-white">{{ formattedDisplayValue() }}</span>
+      <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1 overflow-y-auto px-1">
+        <span class="h-5 shrink-0 text-sm text-neutral-400">{{ expression() }}</span>
+        <span class="w-full shrink-0 text-right text-6xl font-light break-words text-white">{{ formattedDisplayValue() }}</span>
       </div>
 
       <div class="grid h-[25.5rem] min-h-0 gap-3" [style.grid-template-rows]="buttonGridTemplateRows">

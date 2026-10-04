@@ -93,13 +93,13 @@ export class Calculator {
   private readonly hasResult = signal(false);
   private readonly lastEvaluatedExpression = signal('');
 
-  /** The big display: the full expression growing as it's typed, or just the result once "=" is pressed. */
+  /** The operation line: the full expression growing as it's typed, or just the result once "=" is pressed. */
   protected readonly formattedDisplayValue = computed(() => {
     const currentTokens = this.tokens();
     if (currentTokens.length === 0) {
       return '0';
     }
-    return currentTokens.map((token) => (this.isOperatorToken(token) ? token : this.formatOperandWithCommas(token))).join('');
+    return currentTokens.map((token) => (this.isOperatorToken(token) ? token : this.formatOperandWithCommas(token))).join(' ');
   });
   /**
    * The small line above the display: the completed expression once "=" is pressed, or — while still typing —

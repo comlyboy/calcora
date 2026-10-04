@@ -71,12 +71,26 @@
         } @else {
           <ul class="divide-y divide-neutral-800">
             @for (entry of history(); track entry.id) {
-              <li class="flex items-center gap-4 py-3">
+              <li class="flex items-center gap-3 py-3">
                 <span class="shrink-0 text-xs text-neutral-500">{{ formatHistoryTimestamp(entry.timestamp) }}</span>
                 <div class="flex flex-1 flex-col items-end">
                   <span class="text-sm text-neutral-400">{{ formatExpressionText(entry.expression) }} =</span>
                   <span class="text-xl font-light text-white">{{ formatOperandWithCommas(entry.result) }}</span>
                 </div>
+                <button
+                  type="button"
+                  (click)="shareEntry(entry)"
+                  aria-label="Share this result"
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-400 active:opacity-70"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-4.5 w-4.5">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.7 10.7 15.3 7.4M8.7 13.3l6.6 3.3M18 6a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM6 14.5A2.5 2.5 0 1 0 6 9.5a2.5 2.5 0 0 0 0 5ZM18 23a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+                    />
+                  </svg>
+                </button>
               </li>
             }
           </ul>
@@ -87,23 +101,13 @@
         @if (shareFeedback(); as feedback) {
           <p class="pb-2 text-center text-xs text-neutral-500">{{ feedback }}</p>
         }
-        <div class="flex gap-3">
-          <button
-            type="button"
-            (click)="shareHistory()"
-            [disabled]="history().length === 0"
-            class="flex-1 rounded-lg bg-neutral-800 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 active:opacity-70"
-          >
-            Share
-          </button>
-          <button
-            type="button"
-            (click)="toggleHistoryPanel()"
-            class="flex-1 rounded-lg bg-yellow-400 px-4 py-2.5 text-sm font-medium text-neutral-900 active:opacity-80"
-          >
-            Close
-          </button>
-        </div>
+        <button
+          type="button"
+          (click)="toggleHistoryPanel()"
+          class="w-full rounded-lg bg-yellow-400 px-4 py-2.5 text-sm font-medium text-neutral-900 active:opacity-80"
+        >
+          Close
+        </button>
       </div>
     </div>
   </div>

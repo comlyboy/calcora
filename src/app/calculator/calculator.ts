@@ -1,6 +1,6 @@
 import { DatePipe, NgClass } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { CalculationHistory } from '../core/calculation-history';
+import { CalculationHistory, CalculationHistoryEntry } from '../core/calculation-history';
 
 export enum CalculatorOperator {
   ADD = '+',
@@ -253,36 +253,29 @@ export class Calculator {
     this.isHistoryPanelOpen.update((isOpen) => !isOpen);
   }
 
-  protected async shareHistory(): Promise<void> {
-    const entries = this.history();
-    if (entries.length === 0) {
-      return;
-    }
-
-    const shareText = entries
-      .map((entry) => `${this.formatExpressionText(entry.expression)} = ${this.formatOperandWithCommas(entry.result)}`)
-      .join('\n');
+  protected async shareEntry(entry: CalculationHistoryEntry): Promise<void> {
+    const shareText = `${this.formatExpressionText(entry.expression)} = ${this.formatOperandWithCommas(entry.result)}`;
 
     if (typeof navigator.share === 'function') {
       try {
-        await navigator.share({ title: 'Calcora history', text: shareText });
+        await navigator.share({ title: 'Calcora result', text: shareText });
       } catch (error) {
         if ((error as DOMException).name !== 'AbortError') {
-          await this.copyHistoryToClipboard(shareText);
+          await this.copyToClipboard(shareText);
         }
       }
       return;
     }
 
-    await this.copyHistoryToClipboard(shareText);
+    await this.copyToClipboard(shareText);
   }
 
-  private async copyHistoryToClipboard(text: string): Promise<void> {
+  private async copyToClipboard(text: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(text);
       this.showShareFeedback('Copied to clipboard');
     } catch {
-      this.showShareFeedback('Could not share history');
+      this.showShareFeedback('Could not share result');
     }
   }
 

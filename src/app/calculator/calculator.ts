@@ -23,7 +23,6 @@ export interface CalculatorButtonConfig {
   type: CalculatorButtonType;
   operator?: CalculatorOperator;
   columnSpan?: 2 | 3;
-  rowSpan?: 2;
 }
 
 const MAXIMUM_DISPLAY_DIGITS = 12;
@@ -55,15 +54,11 @@ export class Calculator {
 
   private static readonly BUTTON_ROW_COUNT = 5;
 
-  /**
-   * A single flat list, relying on CSS grid auto-placement (4 columns) to lay them out in reading order.
-   * The "=" button declares `rowSpan: 2`, so the grid reserves its cell on the row below too.
-   */
+  /** A single flat list, relying on CSS grid auto-placement (4 columns) to lay them out in reading order. */
   protected readonly buttons: readonly CalculatorButtonConfig[] = [
-    { label: 'AC', type: CalculatorButtonType.CLEAR },
-    { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
-    { label: '×', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.MULTIPLY },
+    { label: 'AC', type: CalculatorButtonType.CLEAR, columnSpan: 2 },
     { label: '⌫', type: CalculatorButtonType.BACKSPACE },
+    { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
 
     { label: '7', type: CalculatorButtonType.DIGIT },
     { label: '8', type: CalculatorButtonType.DIGIT },
@@ -78,11 +73,12 @@ export class Calculator {
     { label: '1', type: CalculatorButtonType.DIGIT },
     { label: '2', type: CalculatorButtonType.DIGIT },
     { label: '3', type: CalculatorButtonType.DIGIT },
-    { label: '=', type: CalculatorButtonType.EQUALS, rowSpan: 2 },
+    { label: '×', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.MULTIPLY },
 
     { label: '0', type: CalculatorButtonType.DIGIT },
     { label: '00', type: CalculatorButtonType.DIGIT },
     { label: '.', type: CalculatorButtonType.DECIMAL },
+    { label: '=', type: CalculatorButtonType.EQUALS },
   ];
 
   protected readonly buttonGridTemplateRows = `repeat(${Calculator.BUTTON_ROW_COUNT}, minmax(0, min(4.5rem, 1fr)))`;
@@ -348,7 +344,6 @@ export class Calculator {
     return {
       'col-span-2': button.columnSpan === 2,
       'col-span-3': button.columnSpan === 3,
-      'row-span-2': button.rowSpan === 2,
       'bg-[#CBC18E]': isOperatorStyled,
       'hover:bg-[#D6CDA2]': isOperatorStyled,
       'bg-red-500': isClear,

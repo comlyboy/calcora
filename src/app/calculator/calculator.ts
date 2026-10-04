@@ -80,9 +80,17 @@ export class Calculator {
   private readonly lastEvaluatedExpression = signal('');
 
   /** The big display: the full expression growing as it's typed, or just the result once "=" is pressed. */
-  protected readonly formattedDisplayValue = computed(() => (this.tokens().length === 0 ? '0' : this.tokens().join(' ')));
+  protected readonly formattedDisplayValue = computed(() => {
+    const currentTokens = this.tokens();
+    if (currentTokens.length === 0) {
+      return '0';
+    }
+    return currentTokens.map((token) => (this.isOperatorToken(token) ? token : this.formatOperandWithCommas(token))).join('');
+  });
   /** The small line above the display: the completed expression, shown once "=" is pressed. */
-  protected readonly expression = computed(() => (this.hasResult() ? `${this.lastEvaluatedExpression()} =` : ''));
+  protected readonly expression = computed(() =>
+    this.hasResult() ? `${this.formatExpressionText(this.lastEvaluatedExpression())} =` : '',
+  );
 
   protected inputDigit(digit: string): void {
     if (this.hasResult()) {
@@ -184,6 +192,27 @@ export class Calculator {
 
   protected toggleHistoryPanel(): void {
     this.isHistoryPanelOpen.update((isOpen) => !isOpen);
+  }
+
+  protected formatExpressionText(expressionText: string): string {
+    return expressionText
+      .split(' ')
+      .map((token) => (this.isOperatorToken(token) ? token : this.formatOperandWithCommas(token)))
+      .join(' ');
+  }
+
+  protected formatOperandWithCommas(operand: string): string {
+    if (!/^-?\d+(\.\d*)?$/.test(operand)) {
+      return operand;
+    }
+
+    const isNegative = operand.startsWith('-');
+    const unsignedOperand = isNegative ? operand.slice(1) : operand;
+    const [integerPart, decimalPart] = unsignedOperand.split('.');
+    const groupedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const hasDecimalPoint = unsignedOperand.includes('.');
+
+    return `${isNegative ? '-' : ''}${groupedIntegerPart}${hasDecimalPoint ? '.' + (decimalPart ?? '') : ''}`;
   }
 
   protected formatTimestamp(timestamp: string): string {

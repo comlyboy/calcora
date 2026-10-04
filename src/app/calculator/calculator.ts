@@ -25,6 +25,7 @@ export interface CalculatorButtonConfig {
 }
 
 const MAXIMUM_DISPLAY_DIGITS = 12;
+const CALCULATOR_OPERATORS: readonly string[] = Object.values(CalculatorOperator);
 
 @Component({
   imports: [NgClass],
@@ -63,91 +64,122 @@ export class Calculator {
       { label: '+', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.ADD },
     ],
     [
-      { label: '0', type: CalculatorButtonType.DIGIT, columnSpan: 2 },
+      { label: '0', type: CalculatorButtonType.DIGIT },
+      { label: '00', type: CalculatorButtonType.DIGIT },
       { label: '.', type: CalculatorButtonType.DECIMAL },
       { label: '=', type: CalculatorButtonType.EQUALS },
     ],
   ];
 
-  private readonly displayValue = signal('0');
-  private readonly storedOperand = signal<number | null>(null);
-  private readonly pendingOperator = signal<CalculatorOperator | null>(null);
+  protected readonly buttonGridTemplateRows = `repeat(${this.buttonRows.length}, minmax(0, min(4.5rem, 1fr)))`;
+
+  /** The expression tokens typed so far, alternating operand and operator strings, e.g. ['230', '+', '250']. */
+  private readonly tokens = signal<string[]>([]);
   private readonly isEnteringNewOperand = signal(true);
+  private readonly hasResult = signal(false);
+  private readonly lastEvaluatedExpression = signal('');
 
-  protected readonly buttonGridTemplateRows = `repeat(${this.buttonRows.length}, minmax(0, 1fr))`;
-
-  protected readonly formattedDisplayValue = computed(() => this.displayValue());
-  protected readonly expression = computed(() => {
-    const operand = this.storedOperand();
-    const operator = this.pendingOperator();
-    return operand === null || operator === null ? '' : `${operand} ${operator}`;
-  });
+  /** The big display: the full expression growing as it's typed, or just the result once "=" is pressed. */
+  protected readonly formattedDisplayValue = computed(() => (this.tokens().length === 0 ? '0' : this.tokens().join(' ')));
+  /** The small line above the display: the completed expression, shown once "=" is pressed. */
+  protected readonly expression = computed(() => (this.hasResult() ? `${this.lastEvaluatedExpression()} =` : ''));
 
   protected inputDigit(digit: string): void {
-    if (this.isEnteringNewOperand()) {
-      this.displayValue.set(digit);
+    if (this.hasResult()) {
+      this.tokens.set([digit === '00' ? '0' : digit]);
+      this.hasResult.set(false);
       this.isEnteringNewOperand.set(false);
       return;
     }
 
-    if (this.displayValue().replace(/[-.]/g, '').length >= MAXIMUM_DISPLAY_DIGITS) {
+    if (this.isEnteringNewOperand() || this.tokens().length === 0) {
+      this.tokens.update((current) => [...current, digit === '00' ? '0' : digit]);
+      this.isEnteringNewOperand.set(false);
       return;
     }
 
-    this.displayValue.set(this.displayValue() === '0' ? digit : this.displayValue() + digit);
+    this.tokens.update((current) => {
+      const updatedTokens = [...current];
+      const currentOperand = updatedTokens[updatedTokens.length - 1];
+
+      if (currentOperand.replace(/[-.]/g, '').length >= MAXIMUM_DISPLAY_DIGITS) {
+        return current;
+      }
+
+      updatedTokens[updatedTokens.length - 1] = currentOperand === '0' ? (digit === '00' ? '0' : digit) : currentOperand + digit;
+      return updatedTokens;
+    });
   }
 
   protected inputDecimalPoint(): void {
-    if (this.isEnteringNewOperand()) {
-      this.displayValue.set('0.');
+    if (this.hasResult()) {
+      this.tokens.set(['0.']);
+      this.hasResult.set(false);
       this.isEnteringNewOperand.set(false);
       return;
     }
 
-    if (!this.displayValue().includes('.')) {
-      this.displayValue.set(this.displayValue() + '.');
+    if (this.isEnteringNewOperand() || this.tokens().length === 0) {
+      this.tokens.update((current) => [...current, '0.']);
+      this.isEnteringNewOperand.set(false);
+      return;
     }
+
+    this.tokens.update((current) => {
+      const updatedTokens = [...current];
+      const currentOperand = updatedTokens[updatedTokens.length - 1];
+
+      if (!currentOperand.includes('.')) {
+        updatedTokens[updatedTokens.length - 1] = currentOperand + '.';
+      }
+
+      return updatedTokens;
+    });
   }
 
   protected chooseOperator(operator: CalculatorOperator): void {
-    const currentValue = Number(this.displayValue());
-
-    if (this.storedOperand() !== null && !this.isEnteringNewOperand()) {
-      this.displayValue.set(this.formatResult(this.applyOperator(this.storedOperand()!, currentValue, this.pendingOperator()!)));
-      this.storedOperand.set(Number(this.displayValue()));
-    } else {
-      this.storedOperand.set(currentValue);
+    if (this.tokens().length === 0) {
+      this.tokens.set(['0']);
     }
 
-    this.pendingOperator.set(operator);
+    if (this.hasResult()) {
+      this.hasResult.set(false);
+    } else if (this.isOperatorToken(this.tokens()[this.tokens().length - 1])) {
+      this.tokens.update((current) => {
+        const updatedTokens = [...current];
+        updatedTokens[updatedTokens.length - 1] = operator;
+        return updatedTokens;
+      });
+      return;
+    }
+
+    this.tokens.update((current) => [...current, operator]);
     this.isEnteringNewOperand.set(true);
   }
 
   protected calculateResult(): void {
-    const operand = this.storedOperand();
-    const operator = this.pendingOperator();
+    const currentTokens = this.tokens();
 
-    if (operand === null || operator === null) {
+    if (currentTokens.length < 3 || this.isOperatorToken(currentTokens[currentTokens.length - 1])) {
       return;
     }
 
-    const currentValue = Number(this.displayValue());
-    const resultValue = this.formatResult(this.applyOperator(operand, currentValue, operator));
-    const fullExpression = `${operand} ${operator} ${currentValue}`;
+    const fullExpression = currentTokens.join(' ');
+    const resultValue = this.formatResult(this.evaluateTokens(currentTokens));
 
-    this.displayValue.set(resultValue);
-    this.storedOperand.set(null);
-    this.pendingOperator.set(null);
-    this.isEnteringNewOperand.set(true);
+    this.lastEvaluatedExpression.set(fullExpression);
+    this.tokens.set([resultValue]);
+    this.hasResult.set(true);
+    this.isEnteringNewOperand.set(false);
 
     void this.calculationHistory.recordCalculation(fullExpression, resultValue);
   }
 
   protected clearAll(): void {
-    this.displayValue.set('0');
-    this.storedOperand.set(null);
-    this.pendingOperator.set(null);
+    this.tokens.set([]);
+    this.hasResult.set(false);
     this.isEnteringNewOperand.set(true);
+    this.lastEvaluatedExpression.set('');
   }
 
   protected toggleHistoryPanel(): void {
@@ -200,6 +232,22 @@ export class Calculator {
         this.clearAll();
         break;
     }
+  }
+
+  private isOperatorToken(token: string): boolean {
+    return CALCULATOR_OPERATORS.includes(token);
+  }
+
+  private evaluateTokens(tokens: readonly string[]): number {
+    let result = Number(tokens[0]);
+
+    for (let tokenIndex = 1; tokenIndex < tokens.length; tokenIndex += 2) {
+      const operator = tokens[tokenIndex] as CalculatorOperator;
+      const operand = Number(tokens[tokenIndex + 1]);
+      result = this.applyOperator(result, operand, operator);
+    }
+
+    return result;
   }
 
   private applyOperator(leftOperand: number, rightOperand: number, operator: CalculatorOperator): number {

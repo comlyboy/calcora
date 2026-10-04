@@ -101,10 +101,22 @@ export class Calculator {
     }
     return currentTokens.map((token) => (this.isOperatorToken(token) ? token : this.formatOperandWithCommas(token))).join('');
   });
-  /** The small line above the display: the completed expression, shown once "=" is pressed. */
-  protected readonly expression = computed(() =>
-    this.hasResult() ? `${this.formatExpressionText(this.lastEvaluatedExpression())} =` : '',
-  );
+  /**
+   * The small line above the display: the completed expression once "=" is pressed, or — while still typing —
+   * a live running total as soon as there's a full "operand operator operand" to evaluate, updating with every keystroke.
+   */
+  protected readonly expression = computed(() => {
+    if (this.hasResult()) {
+      return `${this.formatExpressionText(this.lastEvaluatedExpression())} =`;
+    }
+
+    const currentTokens = this.tokens();
+    if (currentTokens.length < 3 || this.isOperatorToken(currentTokens[currentTokens.length - 1])) {
+      return '';
+    }
+
+    return this.formatOperandWithCommas(this.formatResult(this.evaluateTokens(currentTokens)));
+  });
 
   protected inputDigit(digit: string): void {
     if (this.hasResult()) {

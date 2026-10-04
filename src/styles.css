@@ -5,3 +5,8 @@ body {
   height: 100%;
   background-color: #000;
 }
+
+/* Netlify's free-tier "Powered by Netlify" badge (injected as a fixed iframe by their edge). */
+#nl-badge-frame {
+  display: none !important;
+}

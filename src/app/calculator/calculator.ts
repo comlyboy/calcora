@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CalculationHistory } from '../core/calculation-history';
 
@@ -26,7 +27,7 @@ export interface CalculatorButtonConfig {
 const MAXIMUM_DISPLAY_DIGITS = 12;
 
 @Component({
-  imports: [],
+  imports: [NgClass],
   selector: 'app-calculator',
   styleUrl: './calculator.css',
   templateUrl: './calculator.html',
@@ -151,7 +152,7 @@ export class Calculator {
     this.isHistoryPanelOpen.update((isOpen) => !isOpen);
   }
 
-  protected formatTimestamp(timestamp: number): string {
+  protected formatTimestamp(timestamp: string): string {
     return new Date(timestamp).toLocaleString(undefined, {
       month: 'short',
       day: 'numeric',

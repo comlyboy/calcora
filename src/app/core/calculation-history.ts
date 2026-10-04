@@ -4,7 +4,8 @@ export interface CalculationHistoryEntry {
   id: string;
   expression: string;
   result: string;
-  timestamp: number;
+  /** ISO 8601 UTC timestamp; render it through `Date` so it adjusts to the viewer's local timezone. */
+  timestamp: string;
 }
 
 const DATABASE_NAME = 'calcora';
@@ -25,7 +26,7 @@ export class CalculationHistory {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       expression,
       result,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
     };
 
     const database = await this.databaseReady;

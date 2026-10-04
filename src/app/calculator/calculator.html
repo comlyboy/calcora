@@ -1,74 +1,78 @@
-<div class="flex min-h-dvh flex-col bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-  <header class="flex items-center justify-between px-5 py-4">
-    <h1 class="text-lg font-semibold text-white">Calcora</h1>
-    <button
-      type="button"
-      (click)="toggleHistoryPanel()"
-      class="rounded-full px-3 py-1.5 text-sm font-medium text-orange-400 active:opacity-70"
-    >
-      History
-    </button>
-  </header>
+<div class="flex min-h-dvh justify-center bg-black sm:items-center sm:py-8">
+  <div
+    class="relative flex w-full max-w-[420px] flex-col overflow-hidden bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] min-h-dvh sm:h-[860px] sm:min-h-0 sm:rounded-[2.5rem] sm:border sm:border-neutral-800 sm:shadow-2xl"
+  >
+    <header class="flex items-center justify-between px-5 py-4">
+      <h1 class="text-lg font-semibold text-white">Calcora</h1>
+      <button
+        type="button"
+        (click)="toggleHistoryPanel()"
+        class="rounded-full px-3 py-1.5 text-sm font-medium text-orange-400 active:opacity-70"
+      >
+        History
+      </button>
+    </header>
 
-  <div class="flex flex-1 flex-col justify-end gap-6 px-5 pb-6">
-    <div class="flex flex-col items-end gap-1 px-1">
-      <span class="h-5 text-sm text-neutral-400">{{ expression() }}</span>
-      <span class="w-full truncate text-right text-6xl font-light text-white">{{ formattedDisplayValue() }}</span>
-    </div>
+    <div class="flex flex-1 flex-col justify-end gap-6 px-5 pb-6">
+      <div class="flex flex-col items-end gap-1 px-1">
+        <span class="h-5 text-sm text-neutral-400">{{ expression() }}</span>
+        <span class="w-full truncate text-right text-6xl font-light text-white">{{ formattedDisplayValue() }}</span>
+      </div>
 
-    <div class="grid gap-3">
-      @for (row of buttonRows; track $index) {
-        <div class="grid grid-cols-4 gap-3">
-          @for (button of row; track button.label) {
-            <button
-              type="button"
-              (click)="handleButtonPress(button)"
-              [class.col-span-2]="button.columnSpan === 2"
-              [class.col-span-3]="button.columnSpan === 3"
-              [class.bg-orange-500]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
-              [class.hover:bg-orange-400]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
-              [class.bg-neutral-500]="button.type === CalculatorButtonType.CLEAR"
-              [class.hover:bg-neutral-400]="button.type === CalculatorButtonType.CLEAR"
-              [class.bg-neutral-700]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
-              [class.hover:bg-neutral-600]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
-              [class.justify-start]="button.columnSpan === 2 || button.columnSpan === 3"
-              [class.pl-7]="button.columnSpan === 2 || button.columnSpan === 3"
-              class="flex h-16 items-center justify-center rounded-full text-2xl font-medium text-white transition-colors active:opacity-80"
-            >
-              {{ button.label }}
-            </button>
-          }
-        </div>
-      }
-    </div>
-  </div>
-
-  @if (isHistoryPanelOpen()) {
-    <div class="fixed inset-0 z-10 flex flex-col bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <header class="flex items-center justify-between px-5 py-4">
-        <h2 class="text-lg font-semibold text-white">History</h2>
-        <button type="button" (click)="toggleHistoryPanel()" class="rounded-full px-3 py-1.5 text-sm font-medium text-orange-400 active:opacity-70">
-          Done
-        </button>
-      </header>
-
-      <div class="flex-1 overflow-y-auto px-5 pb-6">
-        @if (history().length === 0) {
-          <p class="pt-12 text-center text-sm text-neutral-500">No calculations yet.</p>
-        } @else {
-          <ul class="divide-y divide-neutral-800">
-            @for (entry of history(); track entry.id) {
-              <li class="flex items-center justify-between gap-4 py-3">
-                <div class="flex flex-col">
-                  <span class="text-sm text-neutral-400">{{ entry.expression }} =</span>
-                  <span class="text-xl font-light text-white">{{ entry.result }}</span>
-                </div>
-                <span class="shrink-0 text-xs text-neutral-500">{{ formatTimestamp(entry.timestamp) }}</span>
-              </li>
+      <div class="grid gap-3">
+        @for (row of buttonRows; track $index) {
+          <div class="grid grid-cols-4 gap-3">
+            @for (button of row; track button.label) {
+              <button
+                type="button"
+                (click)="handleButtonPress(button)"
+                [class.col-span-2]="button.columnSpan === 2"
+                [class.col-span-3]="button.columnSpan === 3"
+                [class.bg-orange-500]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
+                [class.hover:bg-orange-400]="button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS"
+                [class.bg-neutral-500]="button.type === CalculatorButtonType.CLEAR"
+                [class.hover:bg-neutral-400]="button.type === CalculatorButtonType.CLEAR"
+                [class.bg-neutral-700]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
+                [class.hover:bg-neutral-600]="button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL"
+                [class.justify-start]="button.columnSpan === 2 || button.columnSpan === 3"
+                [class.pl-7]="button.columnSpan === 2 || button.columnSpan === 3"
+                class="flex h-16 items-center justify-center rounded-full text-2xl font-medium text-white transition-colors active:opacity-80"
+              >
+                {{ button.label }}
+              </button>
             }
-          </ul>
+          </div>
         }
       </div>
     </div>
-  }
+
+    @if (isHistoryPanelOpen()) {
+      <div class="absolute inset-0 z-10 flex flex-col bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+        <header class="flex items-center justify-between px-5 py-4">
+          <h2 class="text-lg font-semibold text-white">History</h2>
+          <button type="button" (click)="toggleHistoryPanel()" class="rounded-full px-3 py-1.5 text-sm font-medium text-orange-400 active:opacity-70">
+            Done
+          </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto px-5 pb-6">
+          @if (history().length === 0) {
+            <p class="pt-12 text-center text-sm text-neutral-500">No calculations yet.</p>
+          } @else {
+            <ul class="divide-y divide-neutral-800">
+              @for (entry of history(); track entry.id) {
+                <li class="flex items-center justify-between gap-4 py-3">
+                  <div class="flex flex-col">
+                    <span class="text-sm text-neutral-400">{{ entry.expression }} =</span>
+                    <span class="text-xl font-light text-white">{{ entry.result }}</span>
+                  </div>
+                  <span class="shrink-0 text-xs text-neutral-500">{{ formatTimestamp(entry.timestamp) }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    }
+  </div>
 </div>

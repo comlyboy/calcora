@@ -74,6 +74,8 @@ export class Calculator {
   private readonly pendingOperator = signal<CalculatorOperator | null>(null);
   private readonly isEnteringNewOperand = signal(true);
 
+  protected readonly buttonGridTemplateRows = `repeat(${this.buttonRows.length}, minmax(0, 1fr))`;
+
   protected readonly formattedDisplayValue = computed(() => this.displayValue());
   protected readonly expression = computed(() => {
     const operand = this.storedOperand();

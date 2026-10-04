@@ -3,7 +3,7 @@
     class="relative flex h-full w-full max-w-[420px] flex-col overflow-hidden bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] light:bg-white sm:max-h-[860px] sm:rounded-[2.5rem] sm:border sm:border-neutral-800 sm:shadow-2xl light:sm:border-neutral-200"
   >
     <header
-      class="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-800/50 px-5 py-4 light:border-neutral-200 light:bg-neutral-100"
+      class="relative z-10 flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-800/50 px-5 py-4 light:border-neutral-200 light:bg-neutral-100"
     >
       <div class="flex items-center gap-2">
         <img src="icons/icon-72x72.png" alt="" class="h-7 w-7 rounded-lg" />
@@ -43,15 +43,15 @@
     </header>
 
     <div class="flex min-h-0 flex-1 flex-col gap-4 px-5 pb-4">
-      <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1.5 px-1">
+      <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1.5 overflow-y-auto scrollbar-hide px-1">
         <span class="w-full shrink-0 text-right text-2xl wrap-break-word text-neutral-400 light:text-neutral-500">{{
           operationLineText()
         }}</span>
         @if (resultLineText()) {
           <div class="w-full shrink-0 border-t border-dashed border-neutral-700 light:border-neutral-300"></div>
-          <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white light:text-neutral-900">
+          <span class="w-full shrink-0 text-right text-4xl leading-none font-light wrap-break-word text-white light:text-neutral-900">
             @if (hasResult()) {
-              <span class="text-2xl">= </span>
+              <span class="text-lg leading-none">= </span>
             }{{ resultLineText() }}</span
           >
         }

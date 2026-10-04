@@ -1,4 +1,4 @@
-import { NgClass } from '@angular/common';
+import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CalculationHistory } from '../core/calculation-history';
 
@@ -28,7 +28,7 @@ const MAXIMUM_DISPLAY_DIGITS = 12;
 const CALCULATOR_OPERATORS: readonly string[] = Object.values(CalculatorOperator);
 
 @Component({
-  imports: [NgClass],
+  imports: [DatePipe, LowerCasePipe, NgClass],
   selector: 'app-calculator',
   styleUrl: './calculator.css',
   templateUrl: './calculator.html',
@@ -215,13 +215,27 @@ export class Calculator {
     return `${isNegative ? '-' : ''}${groupedIntegerPart}${hasDecimalPoint ? '.' + (decimalPart ?? '') : ''}`;
   }
 
-  protected formatTimestamp(timestamp: string): string {
-    return new Date(timestamp).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+  /** The ordinal day ("4th"); the date pipe handles the rest (month, year, time) in the template. */
+  protected formatOrdinalDay(timestamp: string): string {
+    const day = new Date(timestamp).getDate();
+    return `${day}${this.getOrdinalSuffix(day)}`;
+  }
+
+  private getOrdinalSuffix(day: number): string {
+    if (day >= 11 && day <= 13) {
+      return 'th';
+    }
+
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
   }
 
   protected buttonClasses(button: CalculatorButtonConfig): Record<string, boolean> {

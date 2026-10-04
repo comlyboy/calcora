@@ -52,12 +52,14 @@
           } @else {
             <ul class="divide-y divide-neutral-800">
               @for (entry of history(); track entry.id) {
-                <li class="flex items-center justify-between gap-4 py-3">
-                  <div class="flex flex-col">
+                <li class="flex items-center gap-4 py-3">
+                  <span class="shrink-0 text-xs text-neutral-500"
+                    >{{ formatOrdinalDay(entry.timestamp) }} {{ entry.timestamp | date: "MMM, y'.' h:mm" }}{{ (entry.timestamp | date: 'a') | lowercase }}</span
+                  >
+                  <div class="flex flex-1 flex-col items-end">
                     <span class="text-sm text-neutral-400">{{ formatExpressionText(entry.expression) }} =</span>
                     <span class="text-xl font-light text-white">{{ formatOperandWithCommas(entry.result) }}</span>
                   </div>
-                  <span class="shrink-0 text-xs text-neutral-500">{{ formatTimestamp(entry.timestamp) }}</span>
                 </li>
               }
             </ul>

@@ -45,12 +45,12 @@
     <div class="flex min-h-0 flex-1 flex-col gap-4 px-5 pb-4">
       <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1.5 px-1">
         <span class="w-full shrink-0 text-right text-2xl wrap-break-word text-neutral-400 light:text-neutral-500">{{
-          formattedDisplayValue()
+          operationLineText()
         }}</span>
-        @if (expression()) {
+        @if (resultLineText()) {
           <div class="w-full shrink-0 border-t border-dashed border-neutral-700 light:border-neutral-300"></div>
           <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white light:text-neutral-900">{{
-            expression()
+            resultLineText()
           }}</span>
         }
       </div>

@@ -99,8 +99,12 @@ export class Calculator {
   private readonly hasResult = signal(false);
   private readonly lastEvaluatedExpression = signal('');
 
-  /** The operation line: the full expression growing as it's typed, or just the result once "=" is pressed. */
-  protected readonly formattedDisplayValue = computed(() => {
+  /** The operation line: always the expression text — growing as it's typed, or the completed expression + "=" once "=" is pressed. */
+  protected readonly operationLineText = computed(() => {
+    if (this.hasResult()) {
+      return `${this.formatExpressionText(this.lastEvaluatedExpression())} =`;
+    }
+
     const currentTokens = this.tokens();
     if (currentTokens.length === 0) {
       return '0';
@@ -108,12 +112,12 @@ export class Calculator {
     return currentTokens.map((token) => (this.isOperatorToken(token) ? token : this.formatOperandWithCommas(token))).join(' ');
   });
   /**
-   * The small line above the display: the completed expression once "=" is pressed, or — while still typing —
-   * a live running total as soon as there's a full "operand operator operand" to evaluate, updating with every keystroke.
+   * The result line: always the numeric result — a live running total as soon as there's a full
+   * "operand operator operand" to evaluate, updating with every keystroke, or the final value once "=" is pressed.
    */
-  protected readonly expression = computed(() => {
+  protected readonly resultLineText = computed(() => {
     if (this.hasResult()) {
-      return `${this.formatExpressionText(this.lastEvaluatedExpression())} =`;
+      return this.formatOperandWithCommas(this.tokens()[0] ?? '0');
     }
 
     const currentTokens = this.tokens();

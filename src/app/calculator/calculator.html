@@ -7,7 +7,7 @@
       <button
         type="button"
         (click)="toggleHistoryPanel()"
-        class="rounded-lg px-3 py-1.5 text-sm font-medium text-orange-400 active:opacity-70"
+        class="rounded-lg px-3 py-1.5 text-sm font-medium text-yellow-400 active:opacity-70"
       >
         History
       </button>
@@ -27,7 +27,7 @@
                 type="button"
                 (click)="handleButtonPress(button)"
                 [ngClass]="buttonClasses(button)"
-                class="flex h-full w-full items-center justify-center rounded-lg text-2xl font-medium text-white shadow-lg shadow-black/40 transition-all duration-100 active:scale-95 active:shadow-sm"
+                class="flex h-full w-full items-center justify-center rounded-lg text-2xl font-medium shadow-lg shadow-black/40 transition-all duration-100 active:scale-95 active:shadow-sm"
               >
                 {{ button.label }}
               </button>
@@ -41,7 +41,7 @@
       <div class="absolute inset-0 z-10 flex flex-col bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         <header class="flex shrink-0 items-center justify-between px-5 py-4">
           <h2 class="text-lg font-semibold text-white">History</h2>
-          <button type="button" (click)="toggleHistoryPanel()" class="rounded-lg px-3 py-1.5 text-sm font-medium text-orange-400 active:opacity-70">
+          <button type="button" (click)="toggleHistoryPanel()" class="rounded-lg px-3 py-1.5 text-sm font-medium text-yellow-400 active:opacity-70">
             Done
           </button>
         </header>

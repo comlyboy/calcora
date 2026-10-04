@@ -287,19 +287,24 @@ export class Calculator {
   }
 
   protected buttonClasses(button: CalculatorButtonConfig): Record<string, boolean> {
-    const isOperatorStyled = button.type === CalculatorButtonType.OPERATOR || button.type === CalculatorButtonType.EQUALS;
+    const isOperatorStyled = button.type === CalculatorButtonType.OPERATOR;
+    const isEquals = button.type === CalculatorButtonType.EQUALS;
     const isDigitStyled = button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL;
     const isWide = button.columnSpan === 2 || button.columnSpan === 3;
 
     return {
       'col-span-2': button.columnSpan === 2,
       'col-span-3': button.columnSpan === 3,
-      'bg-orange-500': isOperatorStyled,
-      'hover:bg-orange-400': isOperatorStyled,
-      'bg-neutral-500': button.type === CalculatorButtonType.CLEAR,
-      'hover:bg-neutral-400': button.type === CalculatorButtonType.CLEAR,
-      'bg-neutral-700': isDigitStyled,
-      'hover:bg-neutral-600': isDigitStyled,
+      'bg-[#CBC18E]': isOperatorStyled,
+      'hover:bg-[#D6CDA2]': isOperatorStyled,
+      'bg-yellow-400': button.type === CalculatorButtonType.CLEAR,
+      'hover:bg-yellow-300': button.type === CalculatorButtonType.CLEAR,
+      'text-neutral-900': isOperatorStyled || button.type === CalculatorButtonType.CLEAR,
+      'bg-emerald-500': isEquals,
+      'hover:bg-emerald-400': isEquals,
+      'bg-neutral-800': isDigitStyled,
+      'hover:bg-neutral-700': isDigitStyled,
+      'text-white': isDigitStyled || isEquals,
       'justify-start': isWide,
       'pl-7': isWide,
     };

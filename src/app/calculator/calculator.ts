@@ -51,6 +51,7 @@ export class Calculator {
   protected readonly CalculatorButtonType = CalculatorButtonType;
   protected readonly history = this.calculationHistory.entries;
   protected readonly isHistoryPanelOpen = signal(false);
+  protected readonly shareFeedback = signal<string | null>(null);
 
   private static readonly BUTTON_ROW_COUNT = 5;
 
@@ -250,6 +251,44 @@ export class Calculator {
 
   protected toggleHistoryPanel(): void {
     this.isHistoryPanelOpen.update((isOpen) => !isOpen);
+  }
+
+  protected async shareHistory(): Promise<void> {
+    const entries = this.history();
+    if (entries.length === 0) {
+      return;
+    }
+
+    const shareText = entries
+      .map((entry) => `${this.formatExpressionText(entry.expression)} = ${this.formatOperandWithCommas(entry.result)}`)
+      .join('\n');
+
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: 'Calcora history', text: shareText });
+      } catch (error) {
+        if ((error as DOMException).name !== 'AbortError') {
+          await this.copyHistoryToClipboard(shareText);
+        }
+      }
+      return;
+    }
+
+    await this.copyHistoryToClipboard(shareText);
+  }
+
+  private async copyHistoryToClipboard(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.showShareFeedback('Copied to clipboard');
+    } catch {
+      this.showShareFeedback('Could not share history');
+    }
+  }
+
+  private showShareFeedback(message: string): void {
+    this.shareFeedback.set(message);
+    setTimeout(() => this.shareFeedback.set(null), 2500);
   }
 
   protected formatExpressionText(expressionText: string): string {

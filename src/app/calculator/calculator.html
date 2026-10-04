@@ -20,16 +20,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4.5l3 2" />
           </svg>
         </button>
-        <button
-          type="button"
-          (click)="toggleHistoryPanel()"
-          aria-label="Open menu"
-          class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 active:opacity-70"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
-            <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
       </div>
     </header>
 
@@ -42,7 +32,7 @@
         }
       </div>
 
-      <div class="grid h-102 min-h-0 grid-cols-4 gap-3" [style.grid-template-rows]="buttonGridTemplateRows">
+      <div class="grid h-98 min-h-0 grid-cols-4 gap-2" [style.grid-template-rows]="buttonGridTemplateRows">
         @for (button of buttons; track button.label) {
           <button
             type="button"
@@ -71,11 +61,8 @@
       [class.translate-x-0]="isHistoryPanelOpen()"
       [class.translate-x-full]="!isHistoryPanelOpen()"
     >
-      <header class="flex shrink-0 items-center justify-between px-5 py-4">
+      <header class="flex shrink-0 items-center px-5 py-4">
         <h2 class="text-lg font-semibold text-white">History</h2>
-        <button type="button" (click)="toggleHistoryPanel()" class="rounded-lg px-3 py-1.5 text-sm font-medium text-yellow-400 active:opacity-70">
-          Done
-        </button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto scrollbar-hide px-5 pb-6">
@@ -94,6 +81,29 @@
             }
           </ul>
         }
+      </div>
+
+      <div class="shrink-0 border-t border-neutral-800 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        @if (shareFeedback(); as feedback) {
+          <p class="pb-2 text-center text-xs text-neutral-500">{{ feedback }}</p>
+        }
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="shareHistory()"
+            [disabled]="history().length === 0"
+            class="flex-1 rounded-lg bg-neutral-800 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 active:opacity-70"
+          >
+            Share
+          </button>
+          <button
+            type="button"
+            (click)="toggleHistoryPanel()"
+            class="flex-1 rounded-lg bg-yellow-400 px-4 py-2.5 text-sm font-medium text-neutral-900 active:opacity-80"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   </div>

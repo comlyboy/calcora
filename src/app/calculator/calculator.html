@@ -19,20 +19,16 @@
         <span class="w-full shrink-0 text-right text-4xl font-light break-words text-white">{{ formattedDisplayValue() }}</span>
       </div>
 
-      <div class="grid h-[25.5rem] min-h-0 gap-3" [style.grid-template-rows]="buttonGridTemplateRows">
-        @for (row of buttonRows; track $index) {
-          <div class="grid min-h-0 grid-cols-4 gap-3">
-            @for (button of row; track button.label) {
-              <button
-                type="button"
-                (click)="handleButtonPress(button)"
-                [ngClass]="buttonClasses(button)"
-                class="flex h-full w-full items-center justify-center rounded-lg text-2xl font-medium shadow-lg shadow-black/40 transition-all duration-100 active:scale-95 active:shadow-sm"
-              >
-                {{ button.label }}
-              </button>
-            }
-          </div>
+      <div class="grid h-[25.5rem] min-h-0 grid-cols-4 gap-3" [style.grid-template-rows]="buttonGridTemplateRows">
+        @for (button of buttons; track button.label) {
+          <button
+            type="button"
+            (click)="handleButtonPress(button)"
+            [ngClass]="buttonClasses(button)"
+            class="flex h-full w-full items-center justify-center rounded-lg text-2xl font-medium shadow-lg shadow-black/40 transition-all duration-100 active:scale-95 active:shadow-sm"
+          >
+            {{ button.label }}
+          </button>
         }
       </div>
     </div>

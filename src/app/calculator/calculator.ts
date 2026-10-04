@@ -14,6 +14,7 @@ export enum CalculatorButtonType {
   DECIMAL = 'DECIMAL',
   OPERATOR = 'OPERATOR',
   CLEAR = 'CLEAR',
+  BACKSPACE = 'BACKSPACE',
   EQUALS = 'EQUALS',
 }
 
@@ -22,6 +23,7 @@ export interface CalculatorButtonConfig {
   type: CalculatorButtonType;
   operator?: CalculatorOperator;
   columnSpan?: 2 | 3;
+  rowSpan?: 2;
 }
 
 const MAXIMUM_DISPLAY_DIGITS = 12;
@@ -51,38 +53,39 @@ export class Calculator {
   protected readonly history = this.calculationHistory.entries;
   protected readonly isHistoryPanelOpen = signal(false);
 
-  protected readonly buttonRows: readonly (readonly CalculatorButtonConfig[])[] = [
-    [
-      { label: 'AC', type: CalculatorButtonType.CLEAR, columnSpan: 3 },
-      { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
-    ],
-    [
-      { label: '7', type: CalculatorButtonType.DIGIT },
-      { label: '8', type: CalculatorButtonType.DIGIT },
-      { label: '9', type: CalculatorButtonType.DIGIT },
-      { label: '×', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.MULTIPLY },
-    ],
-    [
-      { label: '4', type: CalculatorButtonType.DIGIT },
-      { label: '5', type: CalculatorButtonType.DIGIT },
-      { label: '6', type: CalculatorButtonType.DIGIT },
-      { label: '−', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.SUBTRACT },
-    ],
-    [
-      { label: '1', type: CalculatorButtonType.DIGIT },
-      { label: '2', type: CalculatorButtonType.DIGIT },
-      { label: '3', type: CalculatorButtonType.DIGIT },
-      { label: '+', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.ADD },
-    ],
-    [
-      { label: '0', type: CalculatorButtonType.DIGIT },
-      { label: '00', type: CalculatorButtonType.DIGIT },
-      { label: '.', type: CalculatorButtonType.DECIMAL },
-      { label: '=', type: CalculatorButtonType.EQUALS },
-    ],
+  private static readonly BUTTON_ROW_COUNT = 5;
+
+  /**
+   * A single flat list, relying on CSS grid auto-placement (4 columns) to lay them out in reading order.
+   * The "=" button declares `rowSpan: 2`, so the grid reserves its cell on the row below too.
+   */
+  protected readonly buttons: readonly CalculatorButtonConfig[] = [
+    { label: 'AC', type: CalculatorButtonType.CLEAR },
+    { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
+    { label: '×', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.MULTIPLY },
+    { label: '⌫', type: CalculatorButtonType.BACKSPACE },
+
+    { label: '7', type: CalculatorButtonType.DIGIT },
+    { label: '8', type: CalculatorButtonType.DIGIT },
+    { label: '9', type: CalculatorButtonType.DIGIT },
+    { label: '−', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.SUBTRACT },
+
+    { label: '4', type: CalculatorButtonType.DIGIT },
+    { label: '5', type: CalculatorButtonType.DIGIT },
+    { label: '6', type: CalculatorButtonType.DIGIT },
+    { label: '+', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.ADD },
+
+    { label: '1', type: CalculatorButtonType.DIGIT },
+    { label: '2', type: CalculatorButtonType.DIGIT },
+    { label: '3', type: CalculatorButtonType.DIGIT },
+    { label: '=', type: CalculatorButtonType.EQUALS, rowSpan: 2 },
+
+    { label: '0', type: CalculatorButtonType.DIGIT },
+    { label: '00', type: CalculatorButtonType.DIGIT },
+    { label: '.', type: CalculatorButtonType.DECIMAL },
   ];
 
-  protected readonly buttonGridTemplateRows = `repeat(${this.buttonRows.length}, minmax(0, min(4.5rem, 1fr)))`;
+  protected readonly buttonGridTemplateRows = `repeat(${Calculator.BUTTON_ROW_COUNT}, minmax(0, min(4.5rem, 1fr)))`;
 
   /** The expression tokens typed so far, alternating operand and operator strings, e.g. ['230', '+', '250']. */
   private readonly tokens = signal<string[]>([]);
@@ -201,6 +204,42 @@ export class Calculator {
     this.lastEvaluatedExpression.set('');
   }
 
+  protected backspace(): void {
+    if (this.hasResult()) {
+      this.clearAll();
+      return;
+    }
+
+    this.tokens.update((current) => {
+      if (current.length === 0) {
+        return current;
+      }
+
+      const updatedTokens = [...current];
+      const lastToken = updatedTokens[updatedTokens.length - 1];
+
+      if (this.isOperatorToken(lastToken)) {
+        updatedTokens.pop();
+        this.isEnteringNewOperand.set(false);
+        return updatedTokens;
+      }
+
+      const trimmedOperand = lastToken.slice(0, -1);
+
+      if (trimmedOperand === '' || trimmedOperand === '-') {
+        if (updatedTokens.length === 1) {
+          this.isEnteringNewOperand.set(true);
+          return ['0'];
+        }
+        updatedTokens.pop();
+        return updatedTokens;
+      }
+
+      updatedTokens[updatedTokens.length - 1] = trimmedOperand;
+      return updatedTokens;
+    });
+  }
+
   protected toggleHistoryPanel(): void {
     this.isHistoryPanelOpen.update((isOpen) => !isOpen);
   }
@@ -289,22 +328,27 @@ export class Calculator {
   protected buttonClasses(button: CalculatorButtonConfig): Record<string, boolean> {
     const isOperatorStyled = button.type === CalculatorButtonType.OPERATOR;
     const isEquals = button.type === CalculatorButtonType.EQUALS;
-    const isDigitStyled = button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL;
+    const isClear = button.type === CalculatorButtonType.CLEAR;
+    const isBackspace = button.type === CalculatorButtonType.BACKSPACE;
+    const isNeutralStyled = button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL;
     const isWide = button.columnSpan === 2 || button.columnSpan === 3;
 
     return {
       'col-span-2': button.columnSpan === 2,
       'col-span-3': button.columnSpan === 3,
+      'row-span-2': button.rowSpan === 2,
       'bg-[#CBC18E]': isOperatorStyled,
       'hover:bg-[#D6CDA2]': isOperatorStyled,
-      'bg-yellow-400': button.type === CalculatorButtonType.CLEAR,
-      'hover:bg-yellow-300': button.type === CalculatorButtonType.CLEAR,
-      'text-neutral-900': isOperatorStyled || button.type === CalculatorButtonType.CLEAR,
+      'bg-red-500': isClear,
+      'hover:bg-red-400': isClear,
+      'text-neutral-900': isOperatorStyled || isBackspace,
       'bg-emerald-500': isEquals,
       'hover:bg-emerald-400': isEquals,
-      'bg-neutral-800': isDigitStyled,
-      'hover:bg-neutral-700': isDigitStyled,
-      'text-white': isDigitStyled || isEquals,
+      'bg-amber-500': isBackspace,
+      'hover:bg-amber-400': isBackspace,
+      'bg-neutral-800': isNeutralStyled,
+      'hover:bg-neutral-700': isNeutralStyled,
+      'text-white': isNeutralStyled || isEquals || isClear,
       'justify-start': isWide,
       'pl-7': isWide,
     };
@@ -326,6 +370,9 @@ export class Calculator {
         break;
       case CalculatorButtonType.CLEAR:
         this.clearAll();
+        break;
+      case CalculatorButtonType.BACKSPACE:
+        this.backspace();
         break;
     }
   }

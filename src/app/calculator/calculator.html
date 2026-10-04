@@ -1,19 +1,38 @@
-<div class="flex h-dvh justify-center overflow-hidden bg-black sm:items-center sm:py-8">
+<div class="flex h-dvh justify-center overflow-hidden bg-black light:bg-neutral-200 sm:items-center sm:py-8">
   <div
-    class="relative flex h-full w-full max-w-[420px] flex-col overflow-hidden bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:max-h-[860px] sm:rounded-[2.5rem] sm:border sm:border-neutral-800 sm:shadow-2xl"
+    class="relative flex h-full w-full max-w-[420px] flex-col overflow-hidden bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] light:bg-white sm:max-h-[860px] sm:rounded-[2.5rem] sm:border sm:border-neutral-800 sm:shadow-2xl light:sm:border-neutral-200"
   >
-    <header class="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-800/50 px-5 py-4">
+    <header
+      class="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-800/50 px-5 py-4 light:border-neutral-200 light:bg-neutral-100"
+    >
       <div class="flex items-center gap-2">
         <img src="icons/icon-72x72.png" alt="" class="h-7 w-7 rounded-lg" />
-        <span class="text-lg font-semibold text-white">Calcora</span>
+        <span class="text-lg font-semibold text-white light:text-neutral-900">Calcora</span>
       </div>
 
       <div class="flex items-center gap-1">
         <button
           type="button"
+          (click)="toggleTheme()"
+          [attr.aria-label]="themeMode() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 active:opacity-70 light:text-neutral-600"
+        >
+          @if (themeMode() === 'dark') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
+              <circle cx="12" cy="12" r="4.5" />
+              <path stroke-linecap="round" d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" />
+            </svg>
+          }
+        </button>
+        <button
+          type="button"
           (click)="toggleHistoryPanel()"
           aria-label="Open calculation history"
-          class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 active:opacity-70"
+          class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 active:opacity-70 light:text-neutral-600"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 3-6.7M3 4v4.5h4.5" />
@@ -25,10 +44,14 @@
 
     <div class="flex min-h-0 flex-1 flex-col gap-4 px-5 pb-4">
       <div class="flex min-h-0 flex-1 flex-col items-end justify-end gap-1.5 px-1">
-        <span class="w-full shrink-0 text-right text-2xl wrap-break-word text-neutral-400">{{ formattedDisplayValue() }}</span>
+        <span class="w-full shrink-0 text-right text-2xl wrap-break-word text-neutral-400 light:text-neutral-500">{{
+          formattedDisplayValue()
+        }}</span>
         @if (expression()) {
-          <div class="w-full shrink-0 border-t border-dashed border-neutral-700"></div>
-          <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white">{{ expression() }}</span>
+          <div class="w-full shrink-0 border-t border-dashed border-neutral-700 light:border-neutral-300"></div>
+          <span class="w-full shrink-0 text-right text-5xl font-light wrap-break-word text-white light:text-neutral-900">{{
+            expression()
+          }}</span>
         }
       </div>
 
@@ -38,7 +61,7 @@
             type="button"
             (click)="handleButtonPress(button)"
             [ngClass]="buttonClasses(button)"
-            class="flex h-full w-full items-center justify-center rounded-lg text-2xl font-medium shadow-lg shadow-black/40 transition-all duration-100 active:scale-95 active:shadow-sm"
+            class="flex h-full w-full items-center justify-center rounded-lg text-2xl font-medium shadow-lg shadow-black/40 transition-all duration-100 active:scale-95 active:shadow-sm light:shadow-black/10"
           >
             {{ button.label }}
           </button>
@@ -57,31 +80,31 @@
 
     <!-- History drawer -->
     <div
-      class="absolute inset-y-0 right-0 z-20 flex w-[85%] max-w-sm flex-col bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-300"
+      class="absolute inset-y-0 right-0 z-20 flex w-[85%] max-w-sm flex-col bg-neutral-900 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-300 light:bg-white"
       [class.translate-x-0]="isHistoryPanelOpen()"
       [class.translate-x-full]="!isHistoryPanelOpen()"
     >
       <header class="flex shrink-0 items-center px-5 py-4">
-        <h2 class="text-lg font-semibold text-white">History</h2>
+        <h2 class="text-lg font-semibold text-white light:text-neutral-900">History</h2>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto scrollbar-hide px-5 pb-6">
         @if (history().length === 0) {
           <p class="pt-12 text-center text-sm text-neutral-500">No calculations yet.</p>
         } @else {
-          <ul class="divide-y divide-neutral-800">
+          <ul class="divide-y divide-neutral-800 light:divide-neutral-200">
             @for (entry of history(); track entry.id) {
               <li class="flex items-center gap-3 py-3">
                 <span class="shrink-0 text-xs text-neutral-500">{{ formatHistoryTimestamp(entry.timestamp) }}</span>
                 <div class="flex flex-1 flex-col items-end">
-                  <span class="text-sm text-neutral-400">{{ formatExpressionText(entry.expression) }} =</span>
-                  <span class="text-xl font-light text-white">{{ formatOperandWithCommas(entry.result) }}</span>
+                  <span class="text-sm text-neutral-400 light:text-neutral-500">{{ formatExpressionText(entry.expression) }} =</span>
+                  <span class="text-xl font-light text-white light:text-neutral-900">{{ formatOperandWithCommas(entry.result) }}</span>
                 </div>
                 <button
                   type="button"
                   (click)="shareEntry(entry)"
                   aria-label="Share this result"
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-400 active:opacity-70"
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-400 active:opacity-70 light:text-neutral-500"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-4.5 w-4.5">
                     <path
@@ -97,7 +120,7 @@
         }
       </div>
 
-      <div class="shrink-0 border-t border-neutral-800 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div class="shrink-0 border-t border-neutral-800 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] light:border-neutral-200">
         @if (shareFeedback(); as feedback) {
           <p class="pb-2 text-center text-xs text-neutral-500">{{ feedback }}</p>
         }

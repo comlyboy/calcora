@@ -1,6 +1,7 @@
 import { DatePipe, NgClass } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CalculationHistory, CalculationHistoryEntry } from '../core/calculation-history';
+import { Theme } from '../core/theme';
 
 export enum CalculatorOperator {
   ADD = '+',
@@ -40,6 +41,7 @@ export class Calculator {
   private readonly calculationHistory = inject(CalculationHistory);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly theme = inject(Theme);
 
   /** Ticks every 30s so relative timestamps ("2 mins ago") stay fresh while the history panel is open. */
   private readonly now = signal(Date.now());
@@ -53,6 +55,11 @@ export class Calculator {
   protected readonly history = this.calculationHistory.entries;
   protected readonly isHistoryPanelOpen = signal(false);
   protected readonly shareFeedback = signal<string | null>(null);
+  protected readonly themeMode = this.theme.mode;
+
+  protected toggleTheme(): void {
+    this.theme.toggle();
+  }
 
   private static readonly BUTTON_ROW_COUNT = 5;
 
@@ -403,6 +410,9 @@ export class Calculator {
       'hover:bg-amber-400': isBackspace,
       'bg-neutral-800': isNeutralStyled,
       'hover:bg-neutral-700': isNeutralStyled,
+      'light:bg-neutral-200': isNeutralStyled,
+      'light:hover:bg-neutral-300': isNeutralStyled,
+      'light:text-neutral-900': isNeutralStyled,
       'text-white': isNeutralStyled || isEquals || isClear,
       'justify-start': isWide,
       'pl-7': isWide,

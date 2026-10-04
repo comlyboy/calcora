@@ -15,6 +15,7 @@ export enum CalculatorButtonType {
   OPERATOR = 'OPERATOR',
   CLEAR = 'CLEAR',
   BACKSPACE = 'BACKSPACE',
+  PERCENT = 'PERCENT',
   EQUALS = 'EQUALS',
 }
 
@@ -57,7 +58,8 @@ export class Calculator {
 
   /** A single flat list, relying on CSS grid auto-placement (4 columns) to lay them out in reading order. */
   protected readonly buttons: readonly CalculatorButtonConfig[] = [
-    { label: 'AC', type: CalculatorButtonType.CLEAR, columnSpan: 2 },
+    { label: 'AC', type: CalculatorButtonType.CLEAR },
+    { label: '%', type: CalculatorButtonType.PERCENT },
     { label: '⌫', type: CalculatorButtonType.BACKSPACE },
     { label: '÷', type: CalculatorButtonType.OPERATOR, operator: CalculatorOperator.DIVIDE },
 
@@ -249,6 +251,20 @@ export class Calculator {
     });
   }
 
+  /** Divides the current operand by 100 in place (works whether mid-typing or on a just-computed result). */
+  protected applyPercent(): void {
+    this.tokens.update((current) => {
+      if (current.length === 0 || this.isOperatorToken(current[current.length - 1])) {
+        return current;
+      }
+
+      const updatedTokens = [...current];
+      const lastIndex = updatedTokens.length - 1;
+      updatedTokens[lastIndex] = this.formatResult(Number(updatedTokens[lastIndex]) / 100);
+      return updatedTokens;
+    });
+  }
+
   protected toggleHistoryPanel(): void {
     this.isHistoryPanelOpen.update((isOpen) => !isOpen);
   }
@@ -370,7 +386,10 @@ export class Calculator {
     const isEquals = button.type === CalculatorButtonType.EQUALS;
     const isClear = button.type === CalculatorButtonType.CLEAR;
     const isBackspace = button.type === CalculatorButtonType.BACKSPACE;
-    const isNeutralStyled = button.type === CalculatorButtonType.DIGIT || button.type === CalculatorButtonType.DECIMAL;
+    const isNeutralStyled =
+      button.type === CalculatorButtonType.DIGIT ||
+      button.type === CalculatorButtonType.DECIMAL ||
+      button.type === CalculatorButtonType.PERCENT;
     const isWide = button.columnSpan === 2 || button.columnSpan === 3;
 
     return {
@@ -412,6 +431,9 @@ export class Calculator {
         break;
       case CalculatorButtonType.BACKSPACE:
         this.backspace();
+        break;
+      case CalculatorButtonType.PERCENT:
+        this.applyPercent();
         break;
     }
   }

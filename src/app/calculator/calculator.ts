@@ -1,5 +1,5 @@
-import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { DatePipe, NgClass } from '@angular/common';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CalculationHistory } from '../core/calculation-history';
 
 export enum CalculatorOperator {
@@ -28,13 +28,24 @@ const MAXIMUM_DISPLAY_DIGITS = 12;
 const CALCULATOR_OPERATORS: readonly string[] = Object.values(CalculatorOperator);
 
 @Component({
-  imports: [DatePipe, LowerCasePipe, NgClass],
+  imports: [NgClass],
+  providers: [DatePipe],
   selector: 'app-calculator',
   styleUrl: './calculator.css',
   templateUrl: './calculator.html',
 })
 export class Calculator {
   private readonly calculationHistory = inject(CalculationHistory);
+  private readonly datePipe = inject(DatePipe);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Ticks every 30s so relative timestamps ("2 mins ago") stay fresh while the history panel is open. */
+  private readonly now = signal(Date.now());
+
+  constructor() {
+    const intervalId = setInterval(() => this.now.set(Date.now()), 30_000);
+    this.destroyRef.onDestroy(() => clearInterval(intervalId));
+  }
 
   protected readonly CalculatorButtonType = CalculatorButtonType;
   protected readonly history = this.calculationHistory.entries;
@@ -215,10 +226,47 @@ export class Calculator {
     return `${isNegative ? '-' : ''}${groupedIntegerPart}${hasDecimalPoint ? '.' + (decimalPart ?? '') : ''}`;
   }
 
-  /** The ordinal day ("4th"); the date pipe handles the rest (month, year, time) in the template. */
-  protected formatOrdinalDay(timestamp: string): string {
-    const day = new Date(timestamp).getDate();
-    return `${day}${this.getOrdinalSuffix(day)}`;
+  /** "2 mins ago" / "1 hour ago" / "Yesterday, 1:30pm" / "4th Oct, 2026. 1:30pm", depending on how old the entry is. */
+  protected formatHistoryTimestamp(timestamp: string): string {
+    const entryDate = new Date(timestamp);
+    const currentDate = new Date(this.now());
+    const diffMinutes = Math.floor((currentDate.getTime() - entryDate.getTime()) / 60_000);
+
+    if (diffMinutes < 1) {
+      return 'Just now';
+    }
+
+    if (diffMinutes < 60) {
+      return `${diffMinutes} min${diffMinutes === 1 ? '' : 's'} ago`;
+    }
+
+    if (this.isSameCalendarDay(entryDate, currentDate)) {
+      const diffHours = Math.floor(diffMinutes / 60);
+      return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    }
+
+    const timeOfDay = `${this.datePipe.transform(timestamp, 'h:mm')}${(this.datePipe.transform(timestamp, 'a') ?? '').toLowerCase()}`;
+
+    if (this.isYesterday(entryDate, currentDate)) {
+      return `Yesterday, ${timeOfDay}`;
+    }
+
+    const day = entryDate.getDate();
+    return `${day}${this.getOrdinalSuffix(day)} ${this.datePipe.transform(timestamp, 'MMM, y')}. ${timeOfDay}`;
+  }
+
+  private isSameCalendarDay(firstDate: Date, secondDate: Date): boolean {
+    return (
+      firstDate.getFullYear() === secondDate.getFullYear() &&
+      firstDate.getMonth() === secondDate.getMonth() &&
+      firstDate.getDate() === secondDate.getDate()
+    );
+  }
+
+  private isYesterday(entryDate: Date, currentDate: Date): boolean {
+    const yesterday = new Date(currentDate);
+    yesterday.setDate(currentDate.getDate() - 1);
+    return this.isSameCalendarDay(entryDate, yesterday);
   }
 
   private getOrdinalSuffix(day: number): string {
